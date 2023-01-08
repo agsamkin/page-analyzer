@@ -1,0 +1,19 @@
+datasource:
+  #  default: ${APP_ENV}
+  default: development
+  development:
+    username: postgres
+    password: admin
+    url: jdbc:postgresql://127.0.0.1:5432/test
+  production:
+    username: ${JDBC_DATABASE_USERNAME}
+    password: ${JDBC_DATABASE_PASSWORD}
+    url: ${JDBC_DATABASE_URL}
+
+ebean:
+  ddl:
+    run: true
+    generate: true
+    seedSql: seed.sql
+#  migration:
+#    run: true

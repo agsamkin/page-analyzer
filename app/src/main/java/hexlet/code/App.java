@@ -9,11 +9,6 @@ import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
 
 public class App {
-    public static void main(String[] args) {
-        Javalin app = getApp();
-        app.start(getPort());
-    }
-
     private static int getPort() {
         String port = System.getenv().getOrDefault("PORT", "5050");
         return Integer.valueOf(port);
@@ -62,6 +57,11 @@ public class App {
         });
 
         return app;
+    }
+
+    public static void main(String[] args) {
+        Javalin app = getApp();
+        app.start(getPort());
     }
 }
 
