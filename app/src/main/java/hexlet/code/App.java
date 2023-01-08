@@ -1,12 +1,17 @@
 package hexlet.code;
 
 import hexlet.code.controllers.RootController;
+import hexlet.code.controllers.UrlController;
 import io.javalin.Javalin;
 import io.javalin.plugin.rendering.template.JavalinThymeleaf;
 import nz.net.ultraq.thymeleaf.layoutdialect.LayoutDialect;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
+
+import static io.javalin.apibuilder.ApiBuilder.get;
+import static io.javalin.apibuilder.ApiBuilder.path;
+import static io.javalin.apibuilder.ApiBuilder.post;
 
 public class App {
     private static int getPort() {
@@ -39,6 +44,27 @@ public class App {
 
     private static void addRoutes(Javalin app) {
         app.get("/", RootController.getWelcome());
+
+        app.routes(() -> {
+            path("urls", () -> {
+                // GET /urls
+                get(UrlController.getListUrls());
+                // POST /urls
+                post(UrlController.createUrl());
+//                // GET /articles/new
+//                get("new", ArticleController.newArticle);
+//                // GET /articles/{id}
+//                get("{id}", ArticleController.showArticle);
+//                // GET /articles/{id}/edit
+//                get("{id}/edit", ArticleController.editArticle);
+//                // POST /articles/{id}/edit
+//                post("{id}/edit", ArticleController.updateArticle);
+//                // GET /articles/{id}/delete
+//                get("{id}/delete", ArticleController.deleteArticle);
+//                // POST /articles/{id}/delete
+//                post("{id}/delete", ArticleController.destroyArticle);
+            });
+        });
     }
 
     public static Javalin getApp() {
