@@ -16,6 +16,9 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    testImplementation 'org.assertj:assertj-core:3.22.0'
+    testImplementation 'io.ebean:ebean-test:12.15.1'
+    testImplementation 'com.konghq:unirest-java:3.13.6'
 
     implementation 'io.javalin:javalin:4.0.1'
 

@@ -51,18 +51,8 @@ public class App {
                 get(UrlController.getListUrls());
                 // POST /urls
                 post(UrlController.createUrl());
-//                // GET /articles/new
-//                get("new", ArticleController.newArticle);
                 // GET /urls/{id}
                 get("{id}", UrlController.showUrl());
-//                // GET /articles/{id}/edit
-//                get("{id}/edit", ArticleController.editArticle);
-//                // POST /articles/{id}/edit
-//                post("{id}/edit", ArticleController.updateArticle);
-//                // GET /articles/{id}/delete
-//                get("{id}/delete", ArticleController.deleteArticle);
-//                // POST /articles/{id}/delete
-//                post("{id}/delete", ArticleController.destroyArticle);
             });
         });
     }
