@@ -49,9 +49,11 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="url : ${urls}">
-                    <td th:text="${url.id}"></td>
-                    <td th:text="${url.name}"></td>
+                <tr th:each="url : ${urls}" th:object="${url}">
+                    <td th:text="*{id}"></td>
+                    <td>
+                        <a th:text="*{name}" th:href="@{/urls/{id}(id=*{getId()})}"></a>
+                    </td>
                     <td></td>
                     <td></td>
                 </tr>

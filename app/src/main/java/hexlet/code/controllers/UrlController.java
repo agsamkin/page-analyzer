@@ -28,7 +28,7 @@ public final class UrlController {
         ctx.attribute("urls", urls);
         ctx.attribute("page", page);
 
-        ctx.render("urls/urls.html");
+        ctx.render("urls/index.html");
     };
 
     private static Handler createUrl = ctx -> {
@@ -69,11 +69,26 @@ public final class UrlController {
         ctx.redirect("/urls");
     };
 
+    private static Handler showUrl = ctx -> {
+        long id = ctx.pathParamAsClass("id", Long.class).getOrDefault(null);
+
+        Url url = new QUrl()
+                .id.equalTo(id)
+                .findOne();
+
+        ctx.attribute("url", url);
+        ctx.render("urls/show.html");
+    };
+
     public static Handler getListUrls() {
         return listUrls;
     }
 
     public static Handler createUrl() {
         return createUrl;
+    }
+
+    public static Handler showUrl() {
+        return showUrl;
     }
 }
