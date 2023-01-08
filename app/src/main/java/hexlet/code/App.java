@@ -31,7 +31,7 @@ public class App {
 
         ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
         templateResolver.setPrefix("/templates/");
-
+        templateResolver.setCharacterEncoding("UTF-8");
         templateEngine.addTemplateResolver(templateResolver);
 
         return templateEngine;
@@ -46,7 +46,7 @@ public class App {
             if (!isProduction()) {
                 config.enableDevLogging();
             }
-//            config.enableWebjars();
+            config.enableWebjars();
             JavalinThymeleaf.configure(getTemplateEngine());
         });
 
