@@ -9,7 +9,7 @@ import java.net.URL;
 import java.util.List;
 import java.util.Objects;
 
-public class UrlController {
+public final class UrlController {
     private static final int URLS_PER_PAGE = 10;
 
     private static Handler listUrls = ctx -> {
