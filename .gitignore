@@ -14,3 +14,4 @@ bin
 /resources/
 *.log
 /app/database.mv.db
+/app/database.trace.db

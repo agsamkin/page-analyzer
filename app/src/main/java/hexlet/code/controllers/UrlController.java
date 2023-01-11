@@ -1,9 +1,15 @@
 package hexlet.code.controllers;
 
 import hexlet.code.domain.Url;
+import hexlet.code.domain.UrlCheck;
 import hexlet.code.domain.query.QUrl;
+import hexlet.code.domain.query.QUrlCheck;
 import io.ebean.PagedList;
 import io.javalin.http.Handler;
+import kong.unirest.HttpResponse;
+import kong.unirest.Unirest;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.net.URL;
 import java.util.List;
@@ -32,11 +38,11 @@ public final class UrlController {
     };
 
     private static Handler createUrl = ctx -> {
-        String checkUrl = ctx.formParam("url");
+        String checkingUrl = ctx.formParam("url");
 
         URL url;
         try {
-            url = new URL(checkUrl);
+            url = new URL(checkingUrl);
         } catch (Exception e) {
             ctx.sessionAttribute("flash", "Некорректный URL");
             ctx.redirect("/urls");
@@ -62,8 +68,7 @@ public final class UrlController {
             return;
         }
 
-        Url newUrl = new Url(nameUrl);
-        newUrl.save();
+        new Url(nameUrl).save();
 
         ctx.sessionAttribute("flash", "Страница успешно добавлена");
         ctx.redirect("/urls");
@@ -76,8 +81,50 @@ public final class UrlController {
                 .id.equalTo(id)
                 .findOne();
 
+        List<UrlCheck> checks = new QUrlCheck()
+                .url.equalTo(url)
+                .findList();
+
         ctx.attribute("url", url);
+        ctx.attribute("checks", checks);
         ctx.render("urls/show.html");
+    };
+
+    private static Handler checkUrl = ctx -> {
+        long id = ctx.pathParamAsClass("id", Long.class).getOrDefault(null);
+
+        Url url = new QUrl()
+                .id.equalTo(id)
+                .findOne();
+
+        // check url
+
+        HttpResponse<String> response = Unirest.get(url.getName()).asString();
+        int getStatus = response.getStatus();
+        String body = response.getBody();
+
+        Document doc = Jsoup.parse(body);
+
+        int statusCode = response.getStatus();
+        String title = doc.title();
+        String h1 = doc.selectFirst("h1") != null
+                ? Objects.requireNonNull(doc.selectFirst("h1")).text()
+                : null;
+        String description = doc.selectFirst("meta[name=description]") != null
+                ? Objects.requireNonNull(doc.selectFirst("meta[name=description]")).attr("content")
+                : null;
+
+        UrlCheck urlCheck = new UrlCheck(statusCode, title, h1, description, url);
+        urlCheck.save();
+
+        List<UrlCheck> checks = new QUrlCheck()
+                .url.equalTo(url)
+                .findList();
+
+        ctx.attribute("url", url);
+        ctx.attribute("checks", checks);
+        ctx.redirect("/urls/" + id);
+//        ctx.render("urls/show.html");
     };
 
     public static Handler getListUrls() {
@@ -90,5 +137,9 @@ public final class UrlController {
 
     public static Handler showUrl() {
         return showUrl;
+    }
+
+    public static Handler checkUrl() {
+        return checkUrl;
     }
 }

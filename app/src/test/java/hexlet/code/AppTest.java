@@ -4,9 +4,12 @@ import hexlet.code.domain.Url;
 import hexlet.code.domain.query.QUrl;
 import io.ebean.DB;
 import io.ebean.Database;
+
 import io.javalin.Javalin;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
+import okhttp3.mockwebserver.MockResponse;
+import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -14,6 +17,8 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.net.HttpURLConnection;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -25,8 +30,9 @@ public final class AppTest {
 
     private static Javalin app;
     private static String baseUrl;
-    private static Url existingArticle;
     private static Database database;
+
+    private static final String MOCK_SITE = "src/test/resources/mockSite.html";
 
     @BeforeAll
     public static void beforeAll() {
@@ -46,7 +52,7 @@ public final class AppTest {
     // Но хорошей практикой будет возвращать базу данных между тестами в исходное состояние
     @BeforeEach
     void beforeEach() {
-        database.script().run("/truncate.sql");
+//        database.script().run("/truncate.sql");
         database.script().run("/seed-test-db.sql");
     }
 
@@ -73,7 +79,7 @@ public final class AppTest {
         @Test
         void testCreate() {
             String inputUrl = "https://github.com";
-            HttpResponse<String> responsePost = Unirest
+            HttpResponse responsePost = Unirest
                     .post(baseUrl + "/urls")
                     .field("url", inputUrl)
                     .asEmpty();
@@ -105,6 +111,57 @@ public final class AppTest {
             assertThat(response.getBody()).contains("https://www.youtube.com");
             assertThat(response.getBody()).contains("Проверки");
         }
+
+        @Test
+        void testCheckUrl() throws Exception {
+
+            MockResponse response = new MockResponse();
+            String body = FilesUtil.readFile(MOCK_SITE);
+            response.setBody(body);
+
+            MockWebServer server = new MockWebServer();
+            server.enqueue(response);
+            server.start();
+
+            // Получить mockUrl
+            String mockUrl = server.url("").toString();
+            if (mockUrl.endsWith("/")) {
+                mockUrl = mockUrl.substring(0, mockUrl.length() - 1);
+            }
+
+            // Добавить mockUrl в таблицу бд urls
+            HttpResponse<String> addUrlResponse = Unirest
+                    .post(baseUrl + "/urls")
+                    .field("url", mockUrl)
+                    .asEmpty();
+
+            assertThat(addUrlResponse.getStatus()).isEqualTo(HttpURLConnection.HTTP_MOVED_TEMP);
+            assertThat(addUrlResponse.getHeaders().getFirst("Location")).isEqualTo("/urls");
+
+            // Получить id добаленного в таблицу бд urls mockUrl
+            Optional<Url> mockUrlIdResponse = new QUrl().name.equalTo(mockUrl).findOneOrEmpty();
+            assertThat(mockUrlIdResponse).isNotEmpty();
+            long mockUrlId = mockUrlIdResponse.get().getId();
+
+            // Выполнить проверку mockUrl
+            HttpResponse<String> checkUrlResponse = Unirest
+                    .post(baseUrl + "/urls/" + mockUrlId + "/checks")
+                    .asEmpty();
+
+            assertThat(checkUrlResponse.getStatus()).isEqualTo(HttpURLConnection.HTTP_MOVED_TEMP);
+            assertThat(checkUrlResponse.getHeaders().getFirst("Location")).isEqualTo("/urls/" + mockUrlId);
+
+            // Получим страницу с проверками mockUrlId
+            HttpResponse<String> urlsResponse = Unirest
+                    .get(baseUrl + "/urls/" + mockUrlId)
+                    .asString();
+
+            assertThat(urlsResponse.getBody()).contains(mockUrl);
+            assertThat(urlsResponse.getBody()).contains("description");
+            assertThat(urlsResponse.getBody()).contains("title");
+            assertThat(urlsResponse.getBody()).contains("h1");
+        }
+
     }
 }
 
