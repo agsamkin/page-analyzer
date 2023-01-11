@@ -1,14 +1,14 @@
 datasource:
   #  default: ${APP_ENV}
   default: development
-  development:
-    username: postgres
-    password: admin
-    url: jdbc:postgresql://127.0.0.1:5432/java-project-72
-  #  development:
-  #    username: sa
-  #    password: sa
-  #    url: "jdbc:h2:./database"
+    #  development:
+    #    username: postgres
+    #    password: admin
+    #    url: jdbc:postgresql://127.0.0.1:5432/java-project-72
+    development:
+      username: sa
+      password: sa
+      url: "jdbc:h2:./database"
   production:
     username: ${JDBC_DATABASE_USERNAME}
     password: ${JDBC_DATABASE_PASSWORD}
