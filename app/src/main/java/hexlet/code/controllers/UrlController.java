@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public final class UrlController {
-    private static final int URLS_PER_PAGE = 2;
+    private static final int URLS_PER_PAGE = 10;
 
     private static Handler listUrls = ctx -> {
         int page = ctx.queryParamAsClass("page", Integer.class).getOrDefault(1);
