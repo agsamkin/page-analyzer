@@ -40,5 +40,9 @@ public final class Url extends Model {
     public String getName() {
         return name;
     }
+
+    public List<UrlCheck> getUrlChecks() {
+        return urlChecks;
+    }
 }
 

@@ -1,92 +1,58 @@
 <!DOCTYPE html>
-<html>
+<html xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/application.html}">
 
-<head>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <title>Анализатор страниц</title>
-  <link rel='stylesheet' href='/webjars/bootstrap/5.1.3/css/bootstrap.min.css'>
-  <script src="/webjars/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
-</head>
-
-<body class="d-flex flex-column min-vh-100">
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="/">Анализатор страниц</a>
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-      <div class="navbar-nav">
-        <a class="nav-link" href="/">Главная</a>
-        <a class="nav-link" href="/urls">Сайты</a>
-      </div>
-    </div>
-  </div>
-</nav>
-
-<main class="flex-grow-1">
-
-  <section>
+<section layout:fragment="content">
     <div class="container-lg mt-5">
-      <h1 th:text="${url.name}"></h1>
+        <h1 th:text="${url.name}"></h1>
 
-      <table class="table table-bordered table-hover mt-3">
-        <tbody>
-        <tr>
-          <td>ID</td>
-          <td th:text="${url.id}"></td>
-        </tr>
-        <tr>
-          <td>Имя</td>
-          <td th:text="${url.name}"></td>
-        </tr>
-        <tr>
-          <td>Дата создания</td>
-          <td th:text="${url.createdAt}"></td>
-        </tr>
-        </tbody>
-      </table>
+        <table class="table table-bordered table-hover mt-3">
+            <tbody>
+            <tr>
+                <td>ID</td>
+                <td style="white-space: nowrap" th:text="${url.id}"></td>
+            </tr>
+            <tr>
+                <td>Имя</td>
+                <td th:text="${url.name}"></td>
+            </tr>
+            <tr>
+                <td>Дата создания</td>
+                <td style="white-space: nowrap"
+                    th:text="${#temporals.format(url.getCreatedAt(), 'dd-MM-yyyy HH:mm')}"></td>
+            </tr>
+            </tbody>
+        </table>
 
-      <h2 class="mt-5">Проверки</h2>
+        <h2 class="mt-5">Проверки</h2>
         <form method="post" action="#" th:action="@{/urls/__${url.id}__/checks}">
             <button type="submit" class="btn btn-primary">Запустить проверку</button>
         </form>
 
-      <table class="table table-bordered table-hover mt-3">
-        <thead>
-        <th class="col-1">ID</th>
-        <th class="col-1">Код ответа</th>
-        <th>title</th>
-        <th>h1</th>
-        <th>description</th>
-        <th class="col-2">Дата проверки</th>
-        </thead>
-          <tbody>
-          <tr th:each="check : ${checks}" th:object="${check}">
-              <td th:text="*{id}"></td>
-              <td th:text="*{statusCode}"></td>
-              <td th:text="*{title}"></td>
-              <td th:text="*{h1}"></td>
-              <td th:text="*{description}"></td>
-              <td th:text="*{createdAt}"></td>
-          </tr>
-          </tbody>
-      </table>
-    </div>
-  </section>
-</main>
+        <table class="table table-bordered table-hover mt-3">
+            <thead>
+            <th class="col-1">ID</th>
+            <th class="col-1">Код ответа</th>
+            <th>title</th>
+            <th>h1</th>
+            <th>description</th>
+            <th class="col-2">Дата проверки</th>
+            </thead>
 
-<footer class="footer border-top py-3 mt-5 bg-light">
-  <div class="container-xl">
-    <div class="text-center">
-      created by
-      <a href="https://github.com/agsamkin" target="_blank">agsamkin</a>
+            <tbody>
+            <tr th:each="check : ${checks}" th:object="${check}">
+                <td th:text="*{id}"></td>
+                <td th:text="*{statusCode}"></td>
+                <td class="text-truncate" style="max-width: 50px;" th:text="*{title}"></td>
+                <td class="text-truncate" style="max-width: 30px;" th:text="*{h1}"></td>
+                <td class="text-truncate" style="max-width: 50px;" th:text="*{description}"></td>
+                <td th:text="${#temporals.format(check.getCreatedAt(), 'dd-MM-yyyy HH:mm')}"></td>
+            </tr>
+            </tbody>
+        </table>
+
     </div>
-  </div>
-</footer>
-</body>
+</section>
 
 </html>
+

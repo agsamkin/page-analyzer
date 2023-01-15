@@ -1,5 +1,0 @@
-TRUNCATE TABLE url CASCADE;
-
-
-
-

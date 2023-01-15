@@ -5,17 +5,20 @@ import hexlet.code.domain.query.QUrl;
 import io.ebean.DB;
 import io.ebean.Database;
 
+import io.ebean.Transaction;
 import io.javalin.Javalin;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 import okhttp3.mockwebserver.MockResponse;
 import okhttp3.mockwebserver.MockWebServer;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.net.HttpURLConnection;
 
 import java.util.Optional;
@@ -32,15 +35,23 @@ public final class AppTest {
     private static String baseUrl;
     private static Database database;
 
+    private static MockWebServer server;
     private static final String MOCK_SITE = "src/test/resources/mockSite.html";
 
+    private static Transaction transaction;
+
     @BeforeAll
-    public static void beforeAll() {
+    public static void beforeAll() throws IOException {
         app = App.getApp();
         app.start(0);
         int port = app.port();
         baseUrl = "http://localhost:" + port;
+
         database = DB.getDefault();
+        database.script().run("/seed-test-db.sql");
+
+        server = new MockWebServer();
+        server.start();
     }
 
     @AfterAll
@@ -48,12 +59,14 @@ public final class AppTest {
         app.stop();
     }
 
-    // Тесты не зависят друг от друга
-    // Но хорошей практикой будет возвращать базу данных между тестами в исходное состояние
     @BeforeEach
     void beforeEach() {
-//        database.script().run("/truncate.sql");
-        database.script().run("/seed-test-db.sql");
+        transaction = DB.beginTransaction();
+    }
+
+    @AfterEach
+    void afterEach() {
+        transaction.rollback();
     }
 
     @Nested
@@ -119,9 +132,7 @@ public final class AppTest {
             String body = FilesUtil.readFile(MOCK_SITE);
             response.setBody(body);
 
-            MockWebServer server = new MockWebServer();
             server.enqueue(response);
-            server.start();
 
             // Получить mockUrl
             String mockUrl = server.url("").toString();
@@ -138,7 +149,7 @@ public final class AppTest {
             assertThat(addUrlResponse.getStatus()).isEqualTo(HttpURLConnection.HTTP_MOVED_TEMP);
             assertThat(addUrlResponse.getHeaders().getFirst("Location")).isEqualTo("/urls");
 
-            // Получить id добаленного в таблицу бд urls mockUrl
+            // Получить id добавленного в таблицу бд urls mockUrl
             Optional<Url> mockUrlIdResponse = new QUrl().name.equalTo(mockUrl).findOneOrEmpty();
             assertThat(mockUrlIdResponse).isNotEmpty();
             long mockUrlId = mockUrlIdResponse.get().getId();
@@ -151,7 +162,7 @@ public final class AppTest {
             assertThat(checkUrlResponse.getStatus()).isEqualTo(HttpURLConnection.HTTP_MOVED_TEMP);
             assertThat(checkUrlResponse.getHeaders().getFirst("Location")).isEqualTo("/urls/" + mockUrlId);
 
-            // Получим страницу с проверками mockUrlId
+            // Получить страницу с проверками mockUrlId
             HttpResponse<String> urlsResponse = Unirest
                     .get(baseUrl + "/urls/" + mockUrlId)
                     .asString();

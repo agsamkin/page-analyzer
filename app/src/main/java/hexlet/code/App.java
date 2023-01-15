@@ -47,13 +47,9 @@ public class App {
 
         app.routes(() -> {
             path("urls", () -> {
-                // GET /urls
                 get(UrlController.getListUrls());
-                // POST /urls
                 post(UrlController.createUrl());
-                // GET /urls/{id}
                 get("{id}", UrlController.showUrl());
-                // POST /urls/{id}/checks
                 post("{id}/checks", UrlController.checkUrl());
             });
         });

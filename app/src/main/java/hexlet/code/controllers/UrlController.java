@@ -4,19 +4,26 @@ import hexlet.code.domain.Url;
 import hexlet.code.domain.UrlCheck;
 import hexlet.code.domain.query.QUrl;
 import hexlet.code.domain.query.QUrlCheck;
+
 import io.ebean.PagedList;
+
 import io.javalin.http.Handler;
+
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
+
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
 import java.net.URL;
+
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public final class UrlController {
-    private static final int URLS_PER_PAGE = 10;
+    private static final int URLS_PER_PAGE = 2;
 
     private static Handler listUrls = ctx -> {
         int page = ctx.queryParamAsClass("page", Integer.class).getOrDefault(1);
@@ -31,8 +38,17 @@ public final class UrlController {
 
         List<Url> urls = pagedUrls.getList();
 
+        int currentPage = pagedUrls.getPageIndex() + 1;
+        int lastPage = pagedUrls.getTotalPageCount() + 1;
+
+        List<Integer> pages = IntStream
+                .range(1, lastPage)
+                .boxed()
+                .collect(Collectors.toList());
+
         ctx.attribute("urls", urls);
-        ctx.attribute("page", page);
+        ctx.attribute("currentPage", currentPage);
+        ctx.attribute("pages", pages);
 
         ctx.render("urls/index.html");
     };
@@ -45,7 +61,8 @@ public final class UrlController {
             url = new URL(checkingUrl);
         } catch (Exception e) {
             ctx.sessionAttribute("flash", "Некорректный URL");
-            ctx.redirect("/urls");
+            ctx.sessionAttribute("flash-type", "danger");
+            ctx.redirect("/");
             return;
         }
 
@@ -64,6 +81,7 @@ public final class UrlController {
 
         if (Objects.nonNull(result)) {
             ctx.sessionAttribute("flash", "Страница уже существует");
+            ctx.sessionAttribute("flash-type", "info");
             ctx.redirect("/urls");
             return;
         }
@@ -71,6 +89,7 @@ public final class UrlController {
         new Url(nameUrl).save();
 
         ctx.sessionAttribute("flash", "Страница успешно добавлена");
+        ctx.sessionAttribute("flash-type", "success");
         ctx.redirect("/urls");
     };
 
@@ -83,6 +102,7 @@ public final class UrlController {
 
         List<UrlCheck> checks = new QUrlCheck()
                 .url.equalTo(url)
+                .orderBy().createdAt.desc()
                 .findList();
 
         ctx.attribute("url", url);
@@ -96,8 +116,6 @@ public final class UrlController {
         Url url = new QUrl()
                 .id.equalTo(id)
                 .findOne();
-
-        // check url
 
         HttpResponse<String> response = Unirest.get(url.getName()).asString();
         int getStatus = response.getStatus();
@@ -124,7 +142,6 @@ public final class UrlController {
         ctx.attribute("url", url);
         ctx.attribute("checks", checks);
         ctx.redirect("/urls/" + id);
-//        ctx.render("urls/show.html");
     };
 
     public static Handler getListUrls() {
