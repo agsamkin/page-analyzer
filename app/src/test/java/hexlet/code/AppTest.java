@@ -5,7 +5,6 @@ import hexlet.code.domain.query.QUrl;
 import io.ebean.DB;
 import io.ebean.Database;
 
-import io.ebean.Transaction;
 import io.javalin.Javalin;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
@@ -38,17 +37,15 @@ public final class AppTest {
     private static MockWebServer server;
     private static final String MOCK_SITE = "src/test/resources/mockSite.html";
 
-    private static Transaction transaction;
-
     @BeforeAll
     public static void beforeAll() throws IOException {
         app = App.getApp();
         app.start(0);
+
         int port = app.port();
         baseUrl = "http://localhost:" + port;
 
         database = DB.getDefault();
-        database.script().run("/seed-test-db.sql");
 
         server = new MockWebServer();
         server.start();
@@ -61,12 +58,12 @@ public final class AppTest {
 
     @BeforeEach
     void beforeEach() {
-        transaction = DB.beginTransaction();
+        database.script().run("/seed-test-db.sql");
     }
 
     @AfterEach
     void afterEach() {
-        transaction.rollback();
+        database.script().run("/truncate.sql");
     }
 
     @Nested

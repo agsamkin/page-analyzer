@@ -118,9 +118,8 @@ public final class UrlController {
                 .findOne();
 
         HttpResponse<String> response = Unirest.get(url.getName()).asString();
-        int getStatus = response.getStatus();
-        String body = response.getBody();
 
+        String body = response.getBody();
         Document doc = Jsoup.parse(body);
 
         int statusCode = response.getStatus();
