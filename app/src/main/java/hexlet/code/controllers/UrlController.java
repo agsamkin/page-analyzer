@@ -54,11 +54,9 @@ public final class UrlController {
     };
 
     private static Handler createUrl = ctx -> {
-        String checkingUrl = ctx.formParam("url");
-
         URL url;
         try {
-            url = new URL(checkingUrl);
+            url = new URL(ctx.formParam("url"));
         } catch (Exception e) {
             ctx.sessionAttribute("flash", "Некорректный URL");
             ctx.sessionAttribute("flash-type", "danger");
@@ -70,23 +68,23 @@ public final class UrlController {
         String host = url.getHost();
         int port = url.getPort();
 
-        String nameUrl = protocol + "://" + host;
+        String normalizedUrl = protocol + "://" + host;
         if (port != -1) {
-            nameUrl += ":" + port;
+            normalizedUrl += ":" + port;
         }
 
-        Url result = new QUrl()
-                .name.equalTo(nameUrl)
+        Url presentUrl = new QUrl()
+                .name.equalTo(normalizedUrl)
                 .findOne();
 
-        if (Objects.nonNull(result)) {
+        if (Objects.nonNull(presentUrl)) {
             ctx.sessionAttribute("flash", "Страница уже существует");
             ctx.sessionAttribute("flash-type", "info");
             ctx.redirect("/urls");
             return;
         }
 
-        new Url(nameUrl).save();
+        new Url(normalizedUrl).save();
 
         ctx.sessionAttribute("flash", "Страница успешно добавлена");
         ctx.sessionAttribute("flash-type", "success");
@@ -117,13 +115,6 @@ public final class UrlController {
                 .id.equalTo(id)
                 .findOne();
 
-        if (Objects.isNull(url)) {
-            ctx.sessionAttribute("flash", "Страница не существует");
-            ctx.sessionAttribute("flash-type", "danger");
-            ctx.redirect("/urls/" + id);
-            return;
-        }
-
         try {
             HttpResponse<String> response = Unirest.get(url.getName()).asString();
 
@@ -135,6 +126,7 @@ public final class UrlController {
             String h1 = doc.selectFirst("h1") != null
                     ? Objects.requireNonNull(doc.selectFirst("h1")).text()
                     : null;
+
             String description = doc.selectFirst("meta[name=description]") != null
                     ? Objects.requireNonNull(doc.selectFirst("meta[name=description]")).attr("content")
                     : null;
