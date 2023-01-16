@@ -9,6 +9,8 @@ import io.ebean.PagedList;
 
 import io.javalin.http.Handler;
 
+import io.javalin.http.HttpCode;
+import io.javalin.http.NotFoundResponse;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 
@@ -117,29 +119,38 @@ public final class UrlController {
                 .id.equalTo(id)
                 .findOne();
 
-        HttpResponse<String> response = Unirest.get(url.getName()).asString();
+        if (Objects.isNull(url)) {
+            ctx.sessionAttribute("flash", "Страница не существует");
+            ctx.sessionAttribute("flash-type", "danger");
+            ctx.redirect("/urls/" + id);
+            return;
+        }
 
-        String body = response.getBody();
-        Document doc = Jsoup.parse(body);
+        try {
+            HttpResponse<String> response = Unirest.get(url.getName()).asString();
 
-        int statusCode = response.getStatus();
-        String title = doc.title();
-        String h1 = doc.selectFirst("h1") != null
-                ? Objects.requireNonNull(doc.selectFirst("h1")).text()
-                : null;
-        String description = doc.selectFirst("meta[name=description]") != null
-                ? Objects.requireNonNull(doc.selectFirst("meta[name=description]")).attr("content")
-                : null;
+            String body = response.getBody();
+            Document doc = Jsoup.parse(body);
 
-        UrlCheck urlCheck = new UrlCheck(statusCode, title, h1, description, url);
-        urlCheck.save();
+            int statusCode = response.getStatus();
+            String title = doc.title();
+            String h1 = doc.selectFirst("h1") != null
+                    ? Objects.requireNonNull(doc.selectFirst("h1")).text()
+                    : null;
+            String description = doc.selectFirst("meta[name=description]") != null
+                    ? Objects.requireNonNull(doc.selectFirst("meta[name=description]")).attr("content")
+                    : null;
 
-        List<UrlCheck> checks = new QUrlCheck()
-                .url.equalTo(url)
-                .findList();
+            UrlCheck urlCheck = new UrlCheck(statusCode, title, h1, description, url);
+            urlCheck.save();
 
-        ctx.attribute("url", url);
-        ctx.attribute("checks", checks);
+            ctx.sessionAttribute("flash", "Страница успешно проверена");
+            ctx.sessionAttribute("flash-type", "success");
+        } catch (Exception e) {
+            ctx.sessionAttribute("flash", "Страница не существует");
+            ctx.sessionAttribute("flash-type", "danger");
+        }
+
         ctx.redirect("/urls/" + id);
     };
 
