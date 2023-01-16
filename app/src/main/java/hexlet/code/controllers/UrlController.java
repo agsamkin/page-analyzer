@@ -9,8 +9,6 @@ import io.ebean.PagedList;
 
 import io.javalin.http.Handler;
 
-import io.javalin.http.HttpCode;
-import io.javalin.http.NotFoundResponse;
 import kong.unirest.HttpResponse;
 import kong.unirest.Unirest;
 
