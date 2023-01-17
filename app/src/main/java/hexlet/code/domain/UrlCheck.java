@@ -30,7 +30,7 @@ public final class UrlCheck extends Model {
 
     private String h1;
 
-    @Lob
+//    @Lob
     private String description;
 
     @ManyToOne(optional = false)
