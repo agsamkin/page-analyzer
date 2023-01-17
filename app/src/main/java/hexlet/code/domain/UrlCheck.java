@@ -9,7 +9,7 @@ import lombok.Setter;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Lob;
+//import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
 import java.time.Instant;
 
