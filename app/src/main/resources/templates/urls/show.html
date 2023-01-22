@@ -40,7 +40,7 @@
             </thead>
 
             <tbody>
-            <tr th:each="check : ${url.urlChecks}" th:object="${check}">
+            <tr th:each="check : ${checks}" th:object="${check}">
                 <td th:text="*{id}"></td>
                 <td th:text="*{statusCode}"></td>
                 <td class="text-truncate" style="max-width: 50px;" th:text="*{title}"></td>

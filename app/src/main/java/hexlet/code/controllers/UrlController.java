@@ -4,6 +4,7 @@ import hexlet.code.domain.Url;
 import hexlet.code.domain.UrlCheck;
 import hexlet.code.domain.query.QUrl;
 
+import hexlet.code.domain.query.QUrlCheck;
 import io.ebean.PagedList;
 
 import io.javalin.http.Handler;
@@ -100,7 +101,13 @@ public final class UrlController {
                 .id.equalTo(id)
                 .findOne();
 
+        List<UrlCheck> checks = new QUrlCheck()
+                .url.equalTo(url)
+                .orderBy().createdAt.desc()
+                .findList();
+
         ctx.attribute("url", url);
+        ctx.attribute("checks", checks);
         ctx.render("urls/show.html");
     };
 
