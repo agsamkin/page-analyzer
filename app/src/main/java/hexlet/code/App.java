@@ -1,30 +1,42 @@
 package hexlet.code;
 
-import hexlet.code.controllers.RootController;
-import hexlet.code.controllers.UrlController;
 import io.javalin.Javalin;
 import io.javalin.plugin.rendering.template.JavalinThymeleaf;
+
 import nz.net.ultraq.thymeleaf.layoutdialect.LayoutDialect;
+
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.extras.java8time.dialect.Java8TimeDialect;
 import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
+
+import hexlet.code.controllers.RootController;
+
+import static hexlet.code.controllers.UrlController.CHECK_URL;
+import static hexlet.code.controllers.UrlController.CREATE_URL;
+import static hexlet.code.controllers.UrlController.LIST_URLS;
+import static hexlet.code.controllers.UrlController.SHOW_URL;
 
 import static io.javalin.apibuilder.ApiBuilder.get;
 import static io.javalin.apibuilder.ApiBuilder.path;
 import static io.javalin.apibuilder.ApiBuilder.post;
 
 public class App {
+
+    private static final String DEFAULT_PORT = "5050";
+    private static final String DEFAULT_ENV = "development";
+    private static final String DEFAULT_MODE = "production";
+
     private static int getPort() {
-        String port = System.getenv().getOrDefault("PORT", "5050");
+        String port = System.getenv().getOrDefault("PORT", DEFAULT_PORT);
         return Integer.valueOf(port);
     }
 
     private static String getMode() {
-        return System.getenv().getOrDefault("APP_ENV", "development");
+        return System.getenv().getOrDefault("APP_ENV", DEFAULT_ENV);
     }
 
     private static boolean isProduction() {
-        return getMode().equals("production");
+        return getMode().equals(DEFAULT_MODE);
     }
 
     private static TemplateEngine getTemplateEngine() {
@@ -47,10 +59,10 @@ public class App {
 
         app.routes(() -> {
             path("urls", () -> {
-                get(UrlController.getListUrls());
-                post(UrlController.createUrl());
-                get("{id}", UrlController.showUrl());
-                post("{id}/checks", UrlController.checkUrl());
+                get(LIST_URLS);
+                post(CREATE_URL);
+                get("{id}", SHOW_URL);
+                post("{id}/checks", CHECK_URL);
             });
         });
     }

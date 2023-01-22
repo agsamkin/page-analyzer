@@ -33,14 +33,14 @@
             <thead>
             <th class="col-1">ID</th>
             <th class="col-1">Код ответа</th>
-            <th>title</th>
-            <th>h1</th>
-            <th>description</th>
+            <th>Заголовок страницы</th>
+            <th>Заголовок 1-го уровня</th>
+            <th>Описания содержимого страницы</th>
             <th class="col-2">Дата проверки</th>
             </thead>
 
             <tbody>
-            <tr th:each="check : ${checks}" th:object="${check}">
+            <tr th:each="check : ${url.urlChecks}" th:object="${check}">
                 <td th:text="*{id}"></td>
                 <td th:text="*{statusCode}"></td>
                 <td class="text-truncate" style="max-width: 50px;" th:text="*{title}"></td>

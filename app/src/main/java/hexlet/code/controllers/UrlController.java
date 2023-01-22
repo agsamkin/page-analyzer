@@ -3,7 +3,6 @@ package hexlet.code.controllers;
 import hexlet.code.domain.Url;
 import hexlet.code.domain.UrlCheck;
 import hexlet.code.domain.query.QUrl;
-import hexlet.code.domain.query.QUrlCheck;
 
 import io.ebean.PagedList;
 
@@ -15,6 +14,7 @@ import kong.unirest.Unirest;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 
 import java.util.List;
@@ -25,7 +25,7 @@ import java.util.stream.IntStream;
 public final class UrlController {
     private static final int URLS_PER_PAGE = 10;
 
-    private static Handler listUrls = ctx -> {
+    public static final Handler LIST_URLS = ctx -> {
         int page = ctx.queryParamAsClass("page", Integer.class).getOrDefault(1);
         int offset = (page - 1) * URLS_PER_PAGE;
 
@@ -53,11 +53,13 @@ public final class UrlController {
         ctx.render("urls/index.html");
     };
 
-    private static Handler createUrl = ctx -> {
+    public static final Handler CREATE_URL = ctx -> {
+        String urlFromParam = ctx.formParam("url");
+
         URL url;
         try {
-            url = new URL(ctx.formParam("url"));
-        } catch (Exception e) {
+            url = new URL(urlFromParam);
+        } catch (MalformedURLException e) {
             ctx.sessionAttribute("flash", "Некорректный URL");
             ctx.sessionAttribute("flash-type", "danger");
             ctx.redirect("/");
@@ -91,24 +93,18 @@ public final class UrlController {
         ctx.redirect("/urls");
     };
 
-    private static Handler showUrl = ctx -> {
+    public static final Handler SHOW_URL = ctx -> {
         long id = ctx.pathParamAsClass("id", Long.class).getOrDefault(null);
 
         Url url = new QUrl()
                 .id.equalTo(id)
                 .findOne();
 
-        List<UrlCheck> checks = new QUrlCheck()
-                .url.equalTo(url)
-                .orderBy().createdAt.desc()
-                .findList();
-
         ctx.attribute("url", url);
-        ctx.attribute("checks", checks);
         ctx.render("urls/show.html");
     };
 
-    private static Handler checkUrl = ctx -> {
+    public static final Handler CHECK_URL = ctx -> {
         long id = ctx.pathParamAsClass("id", Long.class).getOrDefault(null);
 
         Url url = new QUrl()
@@ -123,12 +119,13 @@ public final class UrlController {
 
             int statusCode = response.getStatus();
             String title = doc.title();
+
             String h1 = doc.selectFirst("h1") != null
-                    ? Objects.requireNonNull(doc.selectFirst("h1")).text()
+                    ? doc.selectFirst("h1").text()
                     : null;
 
             String description = doc.selectFirst("meta[name=description]") != null
-                    ? Objects.requireNonNull(doc.selectFirst("meta[name=description]")).attr("content")
+                    ? doc.selectFirst("meta[name=description]").attr("content")
                     : null;
 
             UrlCheck urlCheck = new UrlCheck(statusCode, title, h1, description, url);
@@ -143,20 +140,4 @@ public final class UrlController {
 
         ctx.redirect("/urls/" + id);
     };
-
-    public static Handler getListUrls() {
-        return listUrls;
-    }
-
-    public static Handler createUrl() {
-        return createUrl;
-    }
-
-    public static Handler showUrl() {
-        return showUrl;
-    }
-
-    public static Handler checkUrl() {
-        return checkUrl;
-    }
 }
