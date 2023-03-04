@@ -1,6 +1,7 @@
 ## Page analyzer
 
-[cайт](https://page-analyzer-5x8b.onrender.com/), который анализирует указанные страницы на SEO пригодность.
+[//]: # ([cайт]&#40;https://page-analyzer-5x8b.onrender.com/&#41;, который анализирует указанные страницы на SEO пригодность.)
+Cайт, который анализирует указанные страницы на SEO пригодность.
 
 ### Hexlet tests and linter status:
 
